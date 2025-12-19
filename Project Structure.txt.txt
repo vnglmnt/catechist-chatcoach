@@ -1,0 +1,21 @@
+catechist-chatcoach/
+├── backend/
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── catholic_docs/
+│   │   ├── ccc_sample.txt
+│   │   └── vatican_ii_sample.txt
+│   └── simple_ai.py
+├── frontend/
+│   ├── App.js
+│   ├── app.json
+│   ├── package.json
+│   ├── screens/
+│   │   ├── HomeScreen.js
+│   │   ├── ChatScreen.js
+│   │   └── LessonScreen.js
+│   ├── components/
+│   │   └── CatholicMessage.js
+│   └── assets/
+│       └── icon.png
+└── README.md
