@@ -1,0 +1,12 @@
+catechist-chatcoach/
+├── backend/
+│   ├── main.py
+│   └── requirements.txt
+└── frontend/
+    ├── App.js
+    ├── package.json
+    ├── app.json
+    └── screens/
+        ├── HomeScreen.js
+        ├── ChatScreen.js
+        └── LessonScreen.js

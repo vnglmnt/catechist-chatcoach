@@ -1,224 +1,81 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 
-export default function HomeScreen({ navigation }) {
-  const menuItems = [
-    {
-      id: 1,
-      title: '💬 AI Chat Mentor',
-      description: 'Get faithful answers to teaching questions',
-      screen: 'Chat',
-      color: '#3498db',
-    },
-    {
-      id: 2,
-      title: '📚 Lesson Generator',
-      description: 'Create age-appropriate lesson plans',
-      screen: 'Lesson',
-      color: '#2ecc71',
-    },
-    {
-      id: 3,
-      title: '⛪ Catholic Resources',
-      description: 'CCC, Vatican II, Church Fathers',
-      screen: 'Resources',
-      color: '#9b59b6',
-    },
-    {
-      id: 4,
-      title: '👩‍🏫 Teaching Strategies',
-      description: 'Pedagogical methods for catechists',
-      screen: 'Strategies',
-      color: '#f39c12',
-    },
-    {
-      id: 5,
-      title: '🙏 Prayer Library',
-      description: 'Prayers for catechists and students',
-      screen: 'Prayer',
-      color: '#1abc9c',
-    },
-    {
-      id: 6,
-      title: '❓ FAQ & Support',
-      description: 'Common questions and answers',
-      screen: 'FAQ',
-      color: '#e74c3c',
-    },
-  ];
+export default function HomeScreen() {
+  const [message, setMessage] = useState('');
+  const [response, setResponse] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const quickTopics = [
-    { title: 'Explain Trinity', query: 'How to explain Trinity to children?' },
-    { title: 'Eucharist Lesson', query: 'Lesson plan for Eucharist' },
-    { title: 'Teaching Prayer', query: 'How to teach prayer?' },
-    { title: 'Sacraments', query: 'What are the seven sacraments?' },
-  ];
+  const sendMessage = async () => {
+    if (!message.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:8000/api/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message})
+      });
+      const data = await res.json();
+      setResponse(data.response);
+    } catch (error) {
+      setResponse('Error: Make sure backend is running on http://localhost:8000');
+    }
+    setLoading(false);
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <View style={styles.header}>
-          <Text style={styles.welcome}>Welcome, Catechist!</Text>
-          <Text style={styles.subtitle}>
-            Your AI-assisted teaching companion for Catholic education
-          </Text>
-        </View>
-
-        <View style={styles.quickActions}>
-          <Text style={styles.sectionTitle}>Quick Start</Text>
-          <View style={styles.topicGrid}>
-            {quickTopics.map((topic, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.topicButton}
-                onPress={() => navigation.navigate('Chat', { preset: topic.query })}
-              >
-                <Text style={styles.topicText}>{topic.title}</Text>
-              </TouchableOpacity>
-            ))}
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Catechist ChatCoach</Text>
+        <Text style={styles.subtitle}>AI Teaching Assistant</Text>
+      </View>
+      
+      <View style={styles.chatBox}>
+        <TextInput
+          style={styles.input}
+          value={message}
+          onChangeText={setMessage}
+          placeholder="Ask about Catholic teaching..."
+          placeholderTextColor="#999"
+        />
+        <TouchableOpacity style={styles.button} onPress={sendMessage} disabled={loading}>
+          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Ask AI</Text>}
+        </TouchableOpacity>
+        
+        {response ? (
+          <View style={styles.responseBox}>
+            <Text style={styles.responseLabel}>Answer:</Text>
+            <Text style={styles.responseText}>{response}</Text>
           </View>
-        </View>
-
-        <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>Features</Text>
-          {menuItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.menuCard, { backgroundColor: item.color }]}
-              onPress={() => navigation.navigate(item.screen)}
-            >
-              <Text style={styles.menuTitle}>{item.title}</Text>
-              <Text style={styles.menuDescription}>{item.description}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>About This App</Text>
-          <Text style={styles.infoText}>
-            Catechist ChatCoach helps volunteer catechists prepare faithful,
-            engaging lessons aligned with Catholic teaching.
-          </Text>
-          <Text style={styles.infoSmall}>
-            All content is checked against: CCC • Vatican II • Scripture • Church Fathers
-          </Text>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        ) : null}
+      </View>
+      
+      <View style={styles.quickButtons}>
+        <Text style={styles.quickTitle}>Quick Questions:</Text>
+        {['Explain Trinity', 'What is Eucharist?', 'Teach prayer'].map((q, i) => (
+          <TouchableOpacity key={i} style={styles.quickBtn} onPress={() => setMessage(q)}>
+            <Text style={styles.quickText}>{q}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    backgroundColor: '#2c3e50',
-    padding: 25,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    marginBottom: 20,
-  },
-  welcome: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.9)',
-    lineHeight: 22,
-  },
-  quickActions: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 15,
-  },
-  topicGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  topicButton: {
-    width: '48%',
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 12,
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  topicText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2c3e50',
-  },
-  menuSection: {
-    paddingHorizontal: 20,
-    marginBottom: 25,
-  },
-  menuCard: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 15,
-    marginBottom: 15,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-  },
-  menuTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 5,
-  },
-  menuDescription: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
-  },
-  infoBox: {
-    backgroundColor: '#e8f4fc',
-    margin: 20,
-    padding: 20,
-    borderRadius: 15,
-    borderLeftWidth: 5,
-    borderLeftColor: '#3498db',
-  },
-  infoTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 10,
-  },
-  infoText: {
-    fontSize: 16,
-    color: '#34495e',
-    lineHeight: 22,
-    marginBottom: 10,
-  },
-  infoSmall: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    fontStyle: 'italic',
-  },
+  container: {flex: 1, backgroundColor: '#f5f5f5'},
+  header: {backgroundColor: '#2c3e50', padding: 25, borderBottomLeftRadius: 20, borderBottomRightRadius: 20},
+  title: {fontSize: 28, fontWeight: 'bold', color: '#fff', textAlign: 'center'},
+  subtitle: {fontSize: 16, color: '#ecf0f1', textAlign: 'center', marginTop: 5},
+  chatBox: {margin: 20, backgroundColor: '#fff', padding: 20, borderRadius: 15, elevation: 3},
+  input: {borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 15, fontSize: 16, marginBottom: 15},
+  button: {backgroundColor: '#2c3e50', padding: 15, borderRadius: 10, alignItems: 'center'},
+  buttonText: {color: '#fff', fontSize: 18, fontWeight: 'bold'},
+  responseBox: {marginTop: 20, padding: 15, backgroundColor: '#e8f4fc', borderRadius: 10},
+  responseLabel: {fontSize: 16, fontWeight: 'bold', color: '#2c3e50', marginBottom: 5},
+  responseText: {fontSize: 16, color: '#34495e', lineHeight: 22},
+  quickButtons: {margin: 20, marginTop: 0},
+  quickTitle: {fontSize: 18, fontWeight: 'bold', color: '#2c3e50', marginBottom: 10},
+  quickBtn: {backgroundColor: '#ecf0f1', padding: 15, borderRadius: 10, marginBottom: 10},
+  quickText: {fontSize: 16, color: '#2c3e50'},
 });
